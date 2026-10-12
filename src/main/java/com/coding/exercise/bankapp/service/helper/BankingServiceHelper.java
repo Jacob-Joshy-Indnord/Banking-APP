@@ -159,4 +159,14 @@ public class BankingServiceHelper {
 							.txDateTime(new Date())
 							.build();
 	}
+
+	public Transaction createTransaction(Double amount, Long accountNumber, String txType) {
+
+		return Transaction.builder()
+							.accountNumber(accountNumber)
+							.txAmount(amount)
+							.txType(txType)
+							.txDateTime(new Date())
+							.build();
+	}
 }

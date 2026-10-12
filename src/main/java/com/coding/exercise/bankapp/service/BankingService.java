@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 
 import com.coding.exercise.bankapp.domain.AccountInformation;
+import com.coding.exercise.bankapp.domain.AmountDetails;
 import com.coding.exercise.bankapp.domain.CustomerDetails;
 import com.coding.exercise.bankapp.domain.TransactionDetails;
 import com.coding.exercise.bankapp.domain.TransferDetails;
@@ -28,5 +29,9 @@ public interface BankingService {
     public ResponseEntity<Object> transferDetails(TransferDetails transferDetails, Long customerNumber);
     
     public List<TransactionDetails> findTransactionsByAccountNumber(Long accountNumber);
+    
+    public ResponseEntity<Object> deposit(AmountDetails amountDetails, Long accountNumber);
+    
+    public ResponseEntity<Object> withdraw(AmountDetails amountDetails, Long accountNumber);
     
 }

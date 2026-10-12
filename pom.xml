@@ -16,6 +16,8 @@
 
 	<properties>
 		<java.version>1.8</java.version>
+		<!-- Lombok >= 1.18.30 is required to compile on JDK 17/21; Boot 2.1.4 manages 1.18.6 -->
+		<lombok.version>1.18.34</lombok.version>
 	</properties>
 
 	<dependencies>

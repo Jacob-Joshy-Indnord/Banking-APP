@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.coding.exercise.bankapp.domain.AccountInformation;
+import com.coding.exercise.bankapp.domain.AmountDetails;
 import com.coding.exercise.bankapp.domain.CustomerDetails;
 import com.coding.exercise.bankapp.domain.TransactionDetails;
 import com.coding.exercise.bankapp.domain.TransferDetails;
@@ -307,5 +308,76 @@ public class BankingServiceImpl implements BankingService {
 		return transactionDetails;
 	}
 
+	/**
+	 * Deposit funds into an account and record a CREDIT transaction
+	 * 
+	 * @param amountDetails
+	 * @param accountNumber
+	 * @return
+	 */
+	public ResponseEntity<Object> deposit(AmountDetails amountDetails, Long accountNumber) {
+
+		if(!isPositive(amountDetails)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid amount.");
+		}
+
+		Optional<Account> accountEntityOpt = accountRepository.findByAccountNumberForUpdate(accountNumber);
+		if(!accountEntityOpt.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account Number " + accountNumber + " not found.");
+		}
+
+		Account accountEntity = accountEntityOpt.get();
+		accountEntity.setAccountBalance(currentBalance(accountEntity) + amountDetails.getAmount());
+		accountEntity.setUpdateDateTime(new Date());
+		accountRepository.save(accountEntity);
+
+		transactionRepository.save(bankingServiceHelper.createTransaction(amountDetails.getAmount(), accountNumber, "CREDIT"));
+
+		return ResponseEntity.status(HttpStatus.OK).body("Success: Amount deposited to Account Number " + accountNumber);
+	}
+
+	/**
+	 * Withdraw funds from an account and record a DEBIT transaction.
+	 * 
+	 * The account row is locked for the whole transaction, so the funds check and
+	 * the balance update cannot interleave with a concurrent withdrawal.
+	 * 
+	 * @param amountDetails
+	 * @param accountNumber
+	 * @return
+	 */
+	public ResponseEntity<Object> withdraw(AmountDetails amountDetails, Long accountNumber) {
+
+		if(!isPositive(amountDetails)) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid amount.");
+		}
+
+		Optional<Account> accountEntityOpt = accountRepository.findByAccountNumberForUpdate(accountNumber);
+		if(!accountEntityOpt.isPresent()) {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Account Number " + accountNumber + " not found.");
+		}
+
+		Account accountEntity = accountEntityOpt.get();
+		double balance = currentBalance(accountEntity);
+		if(balance < amountDetails.getAmount()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Insufficient Funds.");
+		}
+
+		accountEntity.setAccountBalance(balance - amountDetails.getAmount());
+		accountEntity.setUpdateDateTime(new Date());
+		accountRepository.save(accountEntity);
+
+		transactionRepository.save(bankingServiceHelper.createTransaction(amountDetails.getAmount(), accountNumber, "DEBIT"));
+
+		return ResponseEntity.status(HttpStatus.OK).body("Success: Amount withdrawn from Account Number " + accountNumber);
+	}
+
+	private boolean isPositive(AmountDetails amountDetails) {
+		return amountDetails != null && amountDetails.getAmount() != null && amountDetails.getAmount() > 0;
+	}
+
+	private double currentBalance(Account accountEntity) {
+		return accountEntity.getAccountBalance() == null ? 0.0 : accountEntity.getAccountBalance();
+	}
 
 }

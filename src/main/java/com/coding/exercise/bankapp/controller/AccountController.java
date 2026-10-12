@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.coding.exercise.bankapp.domain.AccountInformation;
+import com.coding.exercise.bankapp.domain.AmountDetails;
 import com.coding.exercise.bankapp.domain.TransactionDetails;
 import com.coding.exercise.bankapp.domain.TransferDetails;
 import com.coding.exercise.bankapp.service.BankingServiceImpl;
@@ -63,6 +64,32 @@ public class AccountController {
 			@PathVariable Long customerNumber) {
 
 		return bankingService.transferDetails(transferDetails, customerNumber);
+	}
+
+	@PutMapping(path = "/deposit/{accountNumber}")
+	@ApiOperation(value = "Deposit funds", notes = "Deposit funds into an account.")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success", response = Object.class),
+			@ApiResponse(code = 400, message = "Bad Request"),
+			@ApiResponse(code = 404, message = "Account Not Found"),
+			@ApiResponse(code = 500, message = "Internal Server Error") })
+
+	public ResponseEntity<Object> deposit(@RequestBody AmountDetails amountDetails,
+			@PathVariable Long accountNumber) {
+
+		return bankingService.deposit(amountDetails, accountNumber);
+	}
+
+	@PutMapping(path = "/withdraw/{accountNumber}")
+	@ApiOperation(value = "Withdraw funds", notes = "Withdraw funds from an account.")
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Success", response = Object.class),
+			@ApiResponse(code = 400, message = "Bad Request"),
+			@ApiResponse(code = 404, message = "Account Not Found"),
+			@ApiResponse(code = 500, message = "Internal Server Error") })
+
+	public ResponseEntity<Object> withdraw(@RequestBody AmountDetails amountDetails,
+			@PathVariable Long accountNumber) {
+
+		return bankingService.withdraw(amountDetails, accountNumber);
 	}
 
 	@GetMapping(path = "/transactions/{accountNumber}")
